@@ -1,0 +1,1 @@
+config.output.filename = "react-redux-todo-list-sample.bundle.js"

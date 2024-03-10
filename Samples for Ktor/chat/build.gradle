@@ -1,0 +1,81 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.10"
+    }
+}
+
+apply plugin: 'kotlin-multiplatform'
+
+kotlin {
+    targets {
+        js('frontend', IR) {
+            browser {
+                testTask {
+                    enabled = false
+                }
+
+                distribution {
+                    directory = file("$projectDir/src/backendMain/resources/web")
+                }
+            }
+        }
+        jvm('backend') {
+            compilations.main {
+                tasks.named(processResourcesTaskName) {
+                    dependsOn(frontendProcessResources)
+                }
+            }
+        }
+    }
+
+    sourceSets.each {
+        it.dependencies {
+            implementation(project.dependencies.enforcedPlatform("io.ktor:ktor-bom:2.3.5"))
+        }
+    }
+
+    sourceSets {
+        backendMain {
+            dependencies {
+                implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10"
+                implementation "io.ktor:ktor-server-netty"
+                implementation "io.ktor:ktor-server-websockets"
+                implementation "io.ktor:ktor-server-call-logging"
+                implementation "io.ktor:ktor-server-default-headers"
+                implementation "io.ktor:ktor-server-sessions"
+                implementation "ch.qos.logback:logback-classic:1.4.6"
+            }
+        }
+
+        backendTest {
+            dependencies {
+                implementation "io.ktor:ktor-server-test-host"
+                implementation "io.ktor:ktor-client-websockets"
+                implementation "org.jetbrains.kotlin:kotlin-test"
+            }
+        }
+
+        frontendMain {
+            dependencies {
+                implementation "org.jetbrains.kotlin:kotlin-stdlib-js"
+                implementation "io.ktor:ktor-client-websockets"
+                implementation "io.ktor:ktor-client-js"
+                implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-js:1.6.4"
+            }
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+tasks.register("run", JavaExec) {
+    dependsOn(backendJar)
+    mainClass.set("io.ktor.samples.chat.backend.ChatApplicationKt")
+    classpath(configurations.backendRuntimeClasspath, backendJar)
+    args = []
+}

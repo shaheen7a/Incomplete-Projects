@@ -1,0 +1,15 @@
+plugins {
+    id 'org.jetbrains.kotlin.js'
+}
+
+kotlin {
+    js(IR) {
+        browser {
+        }
+        binaries.executable()
+    }
+}
+
+dependencies {
+    implementation project(':shared')
+}

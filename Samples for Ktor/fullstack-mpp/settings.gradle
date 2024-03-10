@@ -1,0 +1,10 @@
+rootProject.name = 'ktor-samples'
+
+def module(group, name) {
+    include(name)
+    project(":$name").projectDir = file("$group/$name")
+}
+
+// ---------------------------
+
+module('samples', 'fullstack-mpp')
